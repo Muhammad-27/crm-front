@@ -13,7 +13,7 @@ const TeacherDashboard = () => {
   const [editingId, setEditingId] = useState(null);
 
   const TEACHER_ID = "7964049050"; 
-  const API_URL = "https://crm-8yhf.onrender.com";
+  const API_URL = "https://crm-project-0yio.onrender.com";
 
   // Pullarni chiroyli qilib (masalan: 300 000 so'm) ko'rsatuvchi funksiya
   const formatMoney = (amount) => {
