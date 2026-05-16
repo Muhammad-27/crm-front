@@ -24,6 +24,7 @@ const StudentDrawer = ({ open, onClose, form, onFinish, editingId }) => {
         </Form.Item>
       </Form>
     </Drawer>
+    
   );
 };
 

@@ -1,13 +1,15 @@
 import { Input, Row, Col, Form, message, Modal, Card, Button } from 'antd';
-import { HomeOutlined, PlusOutlined, AppstoreOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 // Yordamchi Komponentlar
+import AttendanceDrawer from '../Teacher/AttendanceDrawer.jsx';
 import GroupDrawer from '../Teacher/GroupDrawer.jsx';
 import GroupList from '../Teacher/GroupList.jsx';
 import StudentDrawer from '../Teacher/StudentDrawer.jsx';
 import StudentList from '../Teacher/StudentList.jsx';
+import TeacherBottomNav from '../Teacher/TeacherBottomNav.jsx';
 
 const TeacherDashboard = () => {
   // --- UMUMIY STATE ---
@@ -29,6 +31,7 @@ const TeacherDashboard = () => {
   const [openStudentDrawer, setOpenStudentDrawer] = useState(false);
   const [studentForm] = Form.useForm();
   const [editingStudentId, setEditingStudentId] = useState(null);
+  const [openAttendanceDrawer, setOpenAttendanceDrawer] = useState(false);
 
   const formatMoney = (amount) => {
     return new Intl.NumberFormat('ru-RU').format(amount) + " so'm";
@@ -114,7 +117,7 @@ const TeacherDashboard = () => {
       } else {
         await axios.post(`${API_URL}/add-student`, { 
           teacher_id: TEACHER_ID, 
-          group_id: currentGroupId, // Aynan qaysi guruhdaligini yuboramiz
+          group_id: currentGroupId, 
           ...values, 
           fee: Number(values.fee) 
         });
@@ -142,6 +145,12 @@ const TeacherDashboard = () => {
       message.success("O'chirildi!"); 
       fetchStudents(currentGroupId);
     } catch (error) { message.error("Xatolik!"); }
+  };
+
+  const handleSaveAttendance = async (presentIds) => {
+    console.log("Kelgan o'quvchilar ID lari:", presentIds);
+    message.success(`${presentIds.length} ta o'quvchi davomati saqlandi! (Backend kutilmoqda)`);
+    setOpenAttendanceDrawer(false);
   };
 
   // ==============================
@@ -183,9 +192,7 @@ const TeacherDashboard = () => {
           value={searchText}
         />
 
-        {/* =========================================================
-            EKRAN 1: GURUHLAR RO'YXATI (Agar guruhga kirmagan bo'lsa)
-            ========================================================= */}
+        {/* EKRAN 1: GURUHLAR RO'YXATI */}
         {currentGroupId === null ? (
           <>
             <Card style={{ marginBottom: '16px', borderRadius: '20px', background: 'linear-gradient(135deg, #1677ff 0%, #722ed1 100%)', color: 'white', border: 'none', boxShadow: '0 10px 20px rgba(22,119,255,0.2)' }}>
@@ -216,9 +223,7 @@ const TeacherDashboard = () => {
             )}
           </>
         ) : (
-        /* =========================================================
-           EKRAN 2: O'QUVCHILAR RO'YXATI (Agar guruh ichiga kirgan bo'lsa)
-           ========================================================= */
+        /* EKRAN 2: O'QUVCHILAR RO'YXATI */
           <>
             <Card style={{ marginBottom: '16px', borderRadius: '20px', background: 'linear-gradient(135deg, #52c41a 0%, #13c2c2 100%)', color: 'white', border: 'none', boxShadow: '0 10px 20px rgba(82,196,26,0.2)' }}>
               <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '5px' }}>Guruh kutilayotgan tushumi</div>
@@ -240,7 +245,17 @@ const TeacherDashboard = () => {
               </Col>
             </Row>
 
-            <h3 style={{ marginBottom: '16px', fontWeight: 'bold' }}>O'quvchilar ro'yxati</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontWeight: 'bold' }}>O'quvchilar ro'yxati</h3>
+              <Button 
+                type="primary" 
+                onClick={() => setOpenAttendanceDrawer(true)}
+                style={{ backgroundColor: '#52c41a', borderRadius: '10px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(82,196,26,0.3)' }}
+              >
+                ✅ Davomat Olish
+              </Button>
+            </div>
+
             {students.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'gray', padding: '20px' }}>Bu guruhda hali o'quvchilar yo'q. Pastdagi + tugmasi orqali qo'shing.</div>
             ) : (
@@ -253,34 +268,21 @@ const TeacherDashboard = () => {
         )}
       </div>
 
-      {/* Ikkita har xil oynalar (Drawerlar) */}
+      {/* DRAWERLAR */}
       <GroupDrawer open={openGroupDrawer} onClose={() => setOpenGroupDrawer(false)} form={groupForm} onFinish={onFinishGroup} />
       <StudentDrawer open={openStudentDrawer} onClose={() => setOpenStudentDrawer(false)} form={studentForm} onFinish={onFinishStudent} editingId={editingStudentId} />
+      <AttendanceDrawer open={openAttendanceDrawer} onClose={() => setOpenAttendanceDrawer(false)} students={students} onSave={handleSaveAttendance} />
 
-      {/* BOTTOM NAVIGATION (Juda aqlli menyu) */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '10px 20px', paddingBottom: '25px', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)', borderRadius: '30px 30px 0 0', zIndex: 1000 }}>
-        
-        <div onClick={handleBackToGroups} style={{ textAlign: 'center', color: currentGroupId === null ? '#1677ff' : 'gray', cursor: 'pointer' }}>
-          <HomeOutlined style={{ fontSize: '22px' }} />
-          <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>Guruhlar</div>
-        </div>
-        
-        {/* + TUGMASI: Qaysi ekranda bo'lsa, rangi va vazifasi o'zgaradi */}
-        <div 
-          onClick={() => currentGroupId === null ? setOpenGroupDrawer(true) : showAddStudentDrawer()} 
-          style={{ width: '60px', height: '60px', backgroundColor: currentGroupId === null ? '#1677ff' : '#52c41a', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', marginTop: '-35px', boxShadow: currentGroupId === null ? '0 8px 20px rgba(22,119,255,0.4)' : '0 8px 20px rgba(82,196,26,0.4)', cursor: 'pointer', border: '4px solid white', transition: '0.3s' }}
-        >
-          <PlusOutlined style={{ fontSize: '24px', fontWeight: 'bold' }} />
-        </div>
-
-        <div onClick={() => setIsLockedModalVisible(true)} style={{ textAlign: 'center', color: 'gray', cursor: 'pointer' }}>
-          <AppstoreOutlined style={{ fontSize: '22px' }} />
-          <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '4px' }}>Menyu</div>
-        </div>
-      </div>
+      {/* TEPADAGI XATO SHU YERDA EDI. Bottom Nav qo'shildi! */}
+      <TeacherBottomNav 
+        currentGroupId={currentGroupId}
+        onBackToGroups={handleBackToGroups}
+        onAddClick={() => currentGroupId === null ? setOpenGroupDrawer(true) : showAddStudentDrawer()}
+        onMenuClick={() => setIsLockedModalVisible(true)}
+      />
 
       <Modal title={<span>🚀 Katta yangilanishlar kutilyapti!</span>} open={isLockedModalVisible} onCancel={() => setIsLockedModalVisible(false)} footer={null}>
-        <p>Yangi menyuda tez kunda: <b>Hisobotlar, SMS Xabarnoma va Davomat</b> tizimlari qo'shiladi!</p>
+        <p>Yangi menyuda tez kunda: <b>Hisobotlar, SMS Xabarnoma </b> tizimlari qo'shiladi!</p>
       </Modal>
 
     </div>
