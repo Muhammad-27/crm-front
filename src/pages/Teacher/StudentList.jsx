@@ -14,7 +14,8 @@ const StudentList = ({ filteredStudents, loading, handlePayment, showDrawerForEd
               marginBottom: '12px', 
               borderRadius: '20px', // Dumaloq qirralar chizmangizdagidek
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              border: 'none'
+              border: 'none',
+              backgroundColor: '#ffffff' // Orqa fonni aniq OQ qilib belgilaymiz
             }}
             bodyStyle={{ padding: '16px' }}
           >
@@ -22,10 +23,12 @@ const StudentList = ({ filteredStudents, loading, handlePayment, showDrawerForEd
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Avatar src={item.avatar} size={48} />
                 <div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: 'var(--tg-theme-text-color, #000)' }}>
+                  {/* 1. ISM RANGI TO'G'IRLANDI (Doim to'q qora) */}
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#262626' }}>
                     {item.name}
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--tg-theme-hint-color, gray)' }}>
+                  {/* 2. RAQAM RANGI TO'G'IRLANDI (Doim kulrang) */}
+                  <div style={{ fontSize: '13px', color: '#8c8c8c' }}>
                     {item.phone}
                   </div>
                 </div>
