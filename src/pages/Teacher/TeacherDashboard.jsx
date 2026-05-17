@@ -287,12 +287,13 @@ const handleDeleteGroup = async (groupId) => {
               </Col>
             </Row>
 
-          {/* O'quvchilar Sarlavhasi va Davomat tugmalari */}
-<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-  <h3 style={{ margin: 0, fontWeight: 'bold' }}>O'quvchilar ro'yxati</h3>
+{/* O'quvchilar Sarlavhasi va Davomat tugmalari */}
+<div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+  
+  {/* Sarlavha shriftini biroz kichraytiramiz va joy ajratamiz */}
+  <h3 style={{ margin: 0, fontWeight: 'bold', fontSize: '18px', minWidth: '150px' }}>O'quvchilar ro'yxati</h3>
   
   <div style={{ display: 'flex', gap: '8px' }}>
-    {/* YANGI QO'SHILGAN TARIX TUGMASI */}
     <Button 
       onClick={() => setOpenHistoryDrawer(true)}
       style={{ borderRadius: '10px', fontWeight: 'bold', border: '1px solid #1677ff', color: '#1677ff' }}
@@ -300,12 +301,13 @@ const handleDeleteGroup = async (groupId) => {
       🗓️ Tarix
     </Button>
     
+    {/* Joy tejash uchun "Olish" so'zini olib tashladik, shusiz ham ma'nosi tushunarli */}
     <Button 
       type="primary" 
       onClick={handleOpenAttendance}
       style={{ backgroundColor: '#52c41a', borderRadius: '10px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(82,196,26,0.3)' }}
     >
-      ✅ Davomat Olish
+      ✅ Davomat
     </Button>
   </div>
 </div>
@@ -349,7 +351,7 @@ const handleDeleteGroup = async (groupId) => {
         groupId={currentGroupId} 
         students={students} 
       />
-      
+
       <Modal title={<span>🚀 Katta yangilanishlar kutilyapti!</span>} open={isLockedModalVisible} onCancel={() => setIsLockedModalVisible(false)} footer={null}>
         <p>Yangi menyuda tez kunda: <b>Hisobotlar, SMS Xabarnoma </b> tizimlari qo'shiladi!</p>
       </Modal>
