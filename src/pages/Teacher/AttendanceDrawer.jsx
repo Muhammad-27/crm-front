@@ -3,32 +3,27 @@ import { useState, useEffect } from 'react';
 
 const { Text } = Typography;
 
-const AttendanceDrawer = ({ open, onClose, students, onSave }) => {
-  // Kelgan o'quvchilarning ID larini saqlaydigan state
+const AttendanceDrawer = ({ open, onClose, students, onSave, initialPresentIds = [] }) => {
   const [presentStudentIds, setPresentStudentIds] = useState([]);
 
-  // Oyna har safar ochilganda belgilarni tozalab tashlaymiz
   useEffect(() => {
     if (open) {
-      setPresentStudentIds([]);
+      setPresentStudentIds(initialPresentIds);
     }
-  }, [open]);
+  }, [open, initialPresentIds]);
 
-  // Checkbox bosilganda ishlaydigan funksiya
   const toggleStudent = (id) => {
     if (presentStudentIds.includes(id)) {
-      setPresentStudentIds(presentStudentIds.filter(studentId => studentId !== id)); // O'chirish
+      setPresentStudentIds(presentStudentIds.filter(studentId => studentId !== id)); 
     } else {
-      setPresentStudentIds([...presentStudentIds, id]); // Qo'shish
+      setPresentStudentIds([...presentStudentIds, id]); 
     }
   };
 
-  // Saqlash tugmasi
   const handleSave = () => {
     if (presentStudentIds.length === 0) {
       message.warning("Hozircha hech kimni 'Keldi' qilib belgilamadingiz!");
     }
-    // Asosiy sahifaga jo'natamiz
     onSave(presentStudentIds);
   };
 
@@ -36,11 +31,11 @@ const AttendanceDrawer = ({ open, onClose, students, onSave }) => {
     <Drawer
       title={<div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}>📅 Bugungi Davomat</div>}
       placement="bottom"
-      height="85%" // Telefon ekranining 85% qismini egallaydi
+      height="85%" 
       onClose={onClose}
       open={open}
-      bodyStyle={{ padding: '10px 20px', paddingBottom: '80px' }} // Pastki tugmaga joy tashlaymiz
-      style={{ borderRadius: '20px 20px 0 0' }} // Tepa qirralarini dumaloq qilamiz
+      bodyStyle={{ padding: '10px 20px', paddingBottom: '80px' }} 
+      style={{ borderRadius: '20px 20px 0 0' }} 
     >
       <div style={{ marginBottom: '15px', color: 'gray', textAlign: 'center' }}>
         Darsga kelgan o'quvchilarni belgilang
@@ -60,8 +55,9 @@ const AttendanceDrawer = ({ open, onClose, students, onSave }) => {
                 padding: '12px 16px', 
                 marginBottom: '10px',
                 borderRadius: '16px',
-                backgroundColor: isPresent ? '#f6ffed' : '#fff1f0', // Kelgan bo'lsa Yashil, kelmasa Qizil fon
-                border: isPresent ? '1px solid #b7eb8f' : '1px solid #ffa39e',
+                // MANA SHU YER O'ZGARDI: Kelmaganlar uchun Oddiy Oq fon va kulrang chiziq
+                backgroundColor: isPresent ? '#f6ffed' : '#ffffff', 
+                border: isPresent ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
                 cursor: 'pointer',
                 transition: '0.3s'
               }}
@@ -73,14 +69,12 @@ const AttendanceDrawer = ({ open, onClose, students, onSave }) => {
                 <Text style={{ fontWeight: 'bold', fontSize: '16px' }}>{item.name}</Text>
               </div>
               
-              {/* O'ng tomondagi Checkbox */}
               <Checkbox checked={isPresent} />
             </div>
           );
         }}
       />
 
-      {/* Eng pastdagi qotirib qo'yilgan Saqlash tugmasi */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 20px', backgroundColor: 'white', borderTop: '1px solid #f0f0f0' }}>
         <Button 
           type="primary" 

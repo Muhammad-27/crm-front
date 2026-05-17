@@ -10,6 +10,7 @@ import GroupList from '../Teacher/GroupList.jsx';
 import StudentDrawer from '../Teacher/StudentDrawer.jsx';
 import StudentList from '../Teacher/StudentList.jsx';
 import TeacherBottomNav from '../Teacher/TeacherBottomNav.jsx';
+import AttendanceHistoryDrawer from '../Teacher/AttendanceHistoryDrawer.jsx';
 
 const TeacherDashboard = () => {
   // --- UMUMIY STATE ---
@@ -32,6 +33,8 @@ const TeacherDashboard = () => {
   const [studentForm] = Form.useForm();
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [openAttendanceDrawer, setOpenAttendanceDrawer] = useState(false);
+  const [initialPresentIds, setInitialPresentIds] = useState([]);
+  const [openHistoryDrawer, setOpenHistoryDrawer] = useState(false);
 
   const formatMoney = (amount) => {
     return new Intl.NumberFormat('ru-RU').format(amount) + " so'm";
@@ -147,10 +150,49 @@ const TeacherDashboard = () => {
     } catch (error) { message.error("Xatolik!"); }
   };
 
-  const handleSaveAttendance = async (presentIds) => {
-    console.log("Kelgan o'quvchilar ID lari:", presentIds);
-    message.success(`${presentIds.length} ta o'quvchi davomati saqlandi! (Backend kutilmoqda)`);
-    setOpenAttendanceDrawer(false);
+const handleDeleteGroup = async (groupId) => {
+    try {
+      await axios.delete(`${API_URL}/delete-group/${groupId}`);
+      message.success("Guruh va uning o'quvchilari o'chirildi!"); 
+      fetchGroups(); // Ro'yxatni yangilaymiz
+    } catch (error) { message.error("Xatolik yuz berdi!"); }
+  };
+
+ const handleSaveAttendance = async (presentIds) => {
+    try {
+      // Bugungi sanani 'YYYY-MM-DD' formatida olamiz (masalan: "2026-05-17")
+      const today = new Date().toISOString().split('T')[0];
+
+      // API ga ma'lumotni jo'natamiz
+      await axios.post(`${API_URL}/save-attendance`, {
+        group_id: currentGroupId,
+        date: today,
+        present_ids: presentIds
+      });
+
+      message.success(`${presentIds.length} ta o'quvchi davomati bazaga saqlandi! ✅`);
+      setOpenAttendanceDrawer(false);
+    } catch (error) {
+      message.error("Davomatni saqlashda xatolik yuz berdi!");
+    }
+  };
+
+  const handleOpenAttendance = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]; // Bugungi sana
+      
+      // Bazadan bugungi davomatni so'raymiz
+      const response = await axios.get(`${API_URL}/get-attendance/${currentGroupId}?date=${today}`);
+      
+      // Kelgan javobni (masalan [1, 2]) xotiraga yozamiz
+      setInitialPresentIds(response.data); 
+    } catch (error) {
+      // Agar topolmasa, xotirani bo'shatamiz
+      setInitialPresentIds([]); 
+    }
+    
+    // Xotira tayyor bo'lgach, oynani ochamiz!
+    setOpenAttendanceDrawer(true);
   };
 
   // ==============================
@@ -219,7 +261,7 @@ const TeacherDashboard = () => {
             {groups.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'gray', padding: '20px' }}>Hali guruhlar yo'q. Pastdagi + tugmasini bosib birinchi guruhingizni yarating!</div>
             ) : (
-              <GroupList groups={filteredGroups} onOpenGroup={handleOpenGroup} />
+              <GroupList groups={filteredGroups} onOpenGroup={handleOpenGroup} onDeleteGroup={handleDeleteGroup} />
             )}
           </>
         ) : (
@@ -245,16 +287,29 @@ const TeacherDashboard = () => {
               </Col>
             </Row>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontWeight: 'bold' }}>O'quvchilar ro'yxati</h3>
-              <Button 
-                type="primary" 
-                onClick={() => setOpenAttendanceDrawer(true)}
-                style={{ backgroundColor: '#52c41a', borderRadius: '10px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(82,196,26,0.3)' }}
-              >
-                ✅ Davomat Olish
-              </Button>
-            </div>
+          {/* O'quvchilar Sarlavhasi va Davomat tugmalari */}
+<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+  <h3 style={{ margin: 0, fontWeight: 'bold' }}>O'quvchilar ro'yxati</h3>
+  
+  <div style={{ display: 'flex', gap: '8px' }}>
+    {/* YANGI QO'SHILGAN TARIX TUGMASI */}
+    <Button 
+      onClick={() => setOpenHistoryDrawer(true)}
+      style={{ borderRadius: '10px', fontWeight: 'bold', border: '1px solid #1677ff', color: '#1677ff' }}
+    >
+      🗓️ Tarix
+    </Button>
+    
+    <Button 
+      type="primary" 
+      onClick={handleOpenAttendance}
+      style={{ backgroundColor: '#52c41a', borderRadius: '10px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(82,196,26,0.3)' }}
+    >
+      ✅ Davomat Olish
+    </Button>
+  </div>
+</div>
+       
 
             {students.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'gray', padding: '20px' }}>Bu guruhda hali o'quvchilar yo'q. Pastdagi + tugmasi orqali qo'shing.</div>
@@ -271,7 +326,14 @@ const TeacherDashboard = () => {
       {/* DRAWERLAR */}
       <GroupDrawer open={openGroupDrawer} onClose={() => setOpenGroupDrawer(false)} form={groupForm} onFinish={onFinishGroup} />
       <StudentDrawer open={openStudentDrawer} onClose={() => setOpenStudentDrawer(false)} form={studentForm} onFinish={onFinishStudent} editingId={editingStudentId} />
-      <AttendanceDrawer open={openAttendanceDrawer} onClose={() => setOpenAttendanceDrawer(false)} students={students} onSave={handleSaveAttendance} />
+      {/* Eskisi: <AttendanceDrawer open={openAttendanceDrawer} ... /> */}
+<AttendanceDrawer 
+  open={openAttendanceDrawer} 
+  onClose={() => setOpenAttendanceDrawer(false)} 
+  students={students} 
+  onSave={handleSaveAttendance}
+  initialPresentIds={initialPresentIds} 
+/>
 
       {/* TEPADAGI XATO SHU YERDA EDI. Bottom Nav qo'shildi! */}
       <TeacherBottomNav 
@@ -280,7 +342,14 @@ const TeacherDashboard = () => {
         onAddClick={() => currentGroupId === null ? setOpenGroupDrawer(true) : showAddStudentDrawer()}
         onMenuClick={() => setIsLockedModalVisible(true)}
       />
-
+{/* YANGI: Tarix Oynasi */}
+      <AttendanceHistoryDrawer 
+        open={openHistoryDrawer} 
+        onClose={() => setOpenHistoryDrawer(false)} 
+        groupId={currentGroupId} 
+        students={students} 
+      />
+      
       <Modal title={<span>🚀 Katta yangilanishlar kutilyapti!</span>} open={isLockedModalVisible} onCancel={() => setIsLockedModalVisible(false)} footer={null}>
         <p>Yangi menyuda tez kunda: <b>Hisobotlar, SMS Xabarnoma </b> tizimlari qo'shiladi!</p>
       </Modal>
