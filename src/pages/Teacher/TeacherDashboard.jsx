@@ -11,6 +11,7 @@ import StudentDrawer from '../Teacher/StudentDrawer.jsx';
 import StudentList from '../Teacher/StudentList.jsx';
 import TeacherBottomNav from '../Teacher/TeacherBottomNav.jsx';
 import AttendanceHistoryDrawer from '../Teacher/AttendanceHistoryDrawer.jsx';
+import GroupProfile from './GroupProfile';
 
 const TeacherDashboard = () => {
   // --- UMUMIY STATE ---
@@ -35,6 +36,7 @@ const TeacherDashboard = () => {
   const [openAttendanceDrawer, setOpenAttendanceDrawer] = useState(false);
   const [initialPresentIds, setInitialPresentIds] = useState([]);
   const [openHistoryDrawer, setOpenHistoryDrawer] = useState(false);
+
 
   const formatMoney = (amount) => {
     return new Intl.NumberFormat('ru-RU').format(amount) + " so'm";
