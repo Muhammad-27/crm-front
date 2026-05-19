@@ -6,7 +6,8 @@ import axios from 'axios';
 import StudentList from '../Teacher/StudentList'; 
 import AddStudentDrawer from '../../components/Admin/AddStudentDrawer';
 import EditStudentDrawer from '../../components/Admin/EditStudentDrawer';
-import AttendanceDrawer from '../Teacher/AttendanceDrawer'; // Faqat bitta toza import!
+import AttendanceDrawer from '../Teacher/AttendanceDrawer'; 
+import AttendanceHistoryDrawer from '../Teacher/AttendanceHistoryDrawer'; // 🕒 TARIX KELDI
 
 const { Title, Text } = Typography;
 const API_URL = "https://crm-project-0yio.onrender.com";
@@ -14,12 +15,14 @@ const API_URL = "https://crm-project-0yio.onrender.com";
 const GroupProfile = ({ groupId, groupName, onBack }) => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [openAddDrawer, setOpenAddDrawer] = useState(false);
   
+  // Drawer'lar uchun state'lar
+  const [openAddDrawer, setOpenAddDrawer] = useState(false);
   const [openEditDrawer, setOpenEditDrawer] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
-  
   const [openAttendance, setOpenAttendance] = useState(false);
+  
+  const [openHistory, setOpenHistory] = useState(false); // 🕒 TARIX PULTI
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -75,14 +78,26 @@ const GroupProfile = ({ groupId, groupName, onBack }) => {
           </div>
         </div>
         
-        <Button 
-          type="primary" 
-          size="middle" 
-          style={{ borderRadius: '8px', backgroundColor: '#52c41a' }} 
-          onClick={() => setOpenAttendance(true)}
-        >
-          📅 Davomat
-        </Button>
+        {/* 🟢 TUGMALAR QISMI O'ZGARDI */}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Button 
+            type="default" 
+            size="middle" 
+            style={{ borderRadius: '8px' }} 
+            onClick={() => setOpenHistory(true)}
+          >
+            🕒 Tarix
+          </Button>
+
+          <Button 
+            type="primary" 
+            size="middle" 
+            style={{ borderRadius: '8px', backgroundColor: '#52c41a' }} 
+            onClick={() => setOpenAttendance(true)}
+          >
+            📅 Davomat
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -98,6 +113,7 @@ const GroupProfile = ({ groupId, groupName, onBack }) => {
         />
       )}
 
+      {/* O'quvchi qo'shish tugmasi */}
       <Button 
         type="primary" 
         shape="circle" 
@@ -107,6 +123,7 @@ const GroupProfile = ({ groupId, groupName, onBack }) => {
         style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', width: '60px', height: '60px', fontSize: '24px', boxShadow: '0 4px 15px rgba(22, 119, 255, 0.4)', zIndex: 1000 }}
       />
       
+      {/* DRAWER'LAR QATORI */}
       <AddStudentDrawer 
         open={openAddDrawer} 
         onClose={() => setOpenAddDrawer(false)} 
@@ -124,6 +141,14 @@ const GroupProfile = ({ groupId, groupName, onBack }) => {
       <AttendanceDrawer 
         open={openAttendance} 
         onClose={() => setOpenAttendance(false)} 
+        groupId={groupId} 
+        students={students} 
+      />
+
+      {/* 🕒 DAVOMAT TARIXI OYNASI QO'SHILDI */}
+      <AttendanceHistoryDrawer 
+        open={openHistory} 
+        onClose={() => setOpenHistory(false)} 
         groupId={groupId} 
         students={students} 
       />
