@@ -10,7 +10,7 @@ const { Title, Text } = Typography;
 const API_URL = "https://crm-project-0yio.onrender.com";
 
 // 👑 ADMINLAR RO'YXATI (O'zingizning Telegram ID raqamingizni shu yerga yozasiz!)
-const ADMIN_TG_IDS = ["123456789", "987654321"]; 
+const ADMIN_TG_IDS = ["7964049050", "987654321"]; 
 
 function App() {
   const [role, setRole] = useState(null); // 'admin', 'teacher', 'guest'
